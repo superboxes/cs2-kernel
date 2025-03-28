@@ -8,7 +8,6 @@
 class Utils {
 private:
 public:
-	void update_console_title();
 	bool is_in_bounds(const Vector3& pos, int width, int heigh);
 };
 

@@ -13,6 +13,7 @@ bool finish = false;
 // basic window procedure for the overlay window
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+
     switch (message)
     {
     case WM_CREATE:
