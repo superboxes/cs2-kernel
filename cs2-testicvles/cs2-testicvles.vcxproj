@@ -150,7 +150,8 @@ d3dcompiler.lib</AdditionalDependencies>
     <ClInclude Include="render\imgui\imstb_rectpack.h" />
     <ClInclude Include="render\imgui\imstb_textedit.h" />
     <ClInclude Include="render\imgui\imstb_truetype.h" />
-    <ClInclude Include="render\render.hpp" />
+    <ClInclude Include="render\overlay.hpp" />
+    <ClInclude Include="render\ui.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="classes\auto_updater.cpp" />
@@ -165,7 +166,8 @@ d3dcompiler.lib</AdditionalDependencies>
     <ClCompile Include="render\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="render\imgui\imgui_tables.cpp" />
     <ClCompile Include="render\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="render\render.cpp" />
+    <ClCompile Include="render\overlay.cpp" />
+    <ClCompile Include="render\ui.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

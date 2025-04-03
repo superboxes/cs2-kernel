@@ -1,9 +1,9 @@
 #include <thread>
 #include <cmath>
 #include "../mem/reader.hpp"
-#include "../render/render.hpp"
 #include "../classes/config.hpp"
 #include "../mem/driver/driver.h"
+#include "imgui.h"
 
 namespace hack {
 	// all the bone connections for the skeleton ESP
@@ -25,13 +25,16 @@ namespace hack {
 						{"leg_lower_R", "ankle_R"}
 	};
 
-	// ESP drawing
-	// this function uses a mutex to lock the reader thread so we can read the already read and stored values
-	// by the reader thread without any issues
+	// esp drawing
 	void draw() {
 		std::lock_guard<std::mutex> lock(reader_mutex);
 
-		// just a lotta math
+		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+
+		if (config::render_distance > 0.f && g_game.localOrigin.calculate_distance(g_game.c4.get_origin()) > config::render_distance)
+			return;
+
+		// c4 esp
 		if (g_game.isC4Planted)
 		{
 			Vector3 c4Origin = g_game.c4.get_origin();
@@ -44,22 +47,17 @@ namespace hack {
 				float height = 10 - c4RoundedDistance;
 				float width = height * 1.4f;
 
-				render::DrawFilledBox(
-					g::hdcBuffer,
-					c4ScreenPos.x - (width / 2),
-					c4ScreenPos.y - (height / 2),
-					width,
-					height,
-					config::esp_box_color_enemy
+				drawList->AddRectFilled(
+					ImVec2(c4ScreenPos.x - (width / 2), c4ScreenPos.y - (height / 2)),
+					ImVec2(c4ScreenPos.x + (width / 2), c4ScreenPos.y + (height / 2)),
+					ImColor(config::esp_box_color_enemy.toImVec4())
 				);
 
-				render::RenderText(
-					g::hdcBuffer,
-					c4ScreenPos.x + (width / 2 + 5),
-					c4ScreenPos.y,
-					"C4",
-					config::esp_name_color,
-					10
+				// c4 distance text
+				drawList->AddText(
+					ImVec2(c4ScreenPos.x + (width / 2 + 5), c4ScreenPos.y),
+					ImColor(config::esp_name_color.toImVec4()),
+					"C4"
 				);
 			}
 		}
@@ -69,6 +67,13 @@ namespace hack {
 
 		// loop through all players
 		for (auto player = g_game.players.begin(); player < g_game.players.end(); player++) {
+			if (!config::team_esp && g_game.localTeam == player->team)
+				continue;
+
+			float distance = g_game.localOrigin.calculate_distance(player->origin);
+			if (config::render_distance > 0.f && distance > config::render_distance)
+				continue;
+
 			const Vector3 screenPos = g_game.world_to_screen(&player->origin);
 			const Vector3 screenHead = g_game.world_to_screen(&player->head);
 
@@ -81,16 +86,27 @@ namespace hack {
 			const float height = screenPos.y - screenHead.y;
 			const float width = height / 2.4f;
 
-			float distance = g_game.localOrigin.calculate_distance(player->origin);
 			int roundedDistance = std::round(distance / 10.f);
 
+			ImColor skeletonColor = (g_game.localTeam == player->team) ?
+				ImColor(config::esp_skeleton_color_team.toImVec4()) :
+				ImColor(config::esp_skeleton_color_enemy.toImVec4());
+
+			ImColor headTrackerColor = (g_game.localTeam == player->team) ?
+				ImColor(config::esp_head_tracker_color_team.toImVec4()) :
+				ImColor(config::esp_head_tracker_color_enemy.toImVec4());
+
+			ImColor boxColor = (g_game.localTeam == player->team) ?
+				ImColor(config::esp_box_color_team.toImVec4()) :
+				ImColor(config::esp_box_color_enemy.toImVec4());
+
 			if (config::show_head_tracker) {
-				render::DrawCircle(
-					g::hdcBuffer,
-					player->bones.bonePositions["head"].x,
-					player->bones.bonePositions["head"].y - width / 12,
-					width / 5,
-					(g_game.localTeam == player->team ? config::esp_skeleton_color_team : config::esp_skeleton_color_enemy)
+				drawList->AddCircle(
+					ImVec2(player->bones.bonePositions["head"].x, player->bones.bonePositions["head"].y - width / 12),
+					width / 5 * config::esp_head_tracker_size / 3.0f, 
+					headTrackerColor,
+					0, 
+					config::esp_head_tracker_size 
 				);
 			}
 
@@ -99,159 +115,175 @@ namespace hack {
 					const std::string& boneFrom = connection.first;
 					const std::string& boneTo = connection.second;
 
-					render::DrawLine(
-						g::hdcBuffer,
-						player->bones.bonePositions[boneFrom].x, player->bones.bonePositions[boneFrom].y,
-						player->bones.bonePositions[boneTo].x, player->bones.bonePositions[boneTo].y,
-						g_game.localTeam == player->team ? config::esp_skeleton_color_team : config::esp_skeleton_color_enemy
+					drawList->AddLine(
+						ImVec2(player->bones.bonePositions[boneFrom].x, player->bones.bonePositions[boneFrom].y),
+						ImVec2(player->bones.bonePositions[boneTo].x, player->bones.bonePositions[boneTo].y),
+						skeletonColor,
+						config::esp_skeleton_thickness
 					);
 				}
 			}
 
+			// box esp
 			if (config::show_box_esp)
 			{
-				render::DrawBorderBox(
-					g::hdcBuffer,
-					screenHead.x - width / 2,
-					screenHead.y,
-					width,
-					height,
-					(g_game.localTeam == player->team ? config::esp_box_color_team : config::esp_box_color_enemy)
+				drawList->AddRect(
+					ImVec2(screenHead.x - width / 2, screenHead.y),
+					ImVec2(screenHead.x + width / 2, screenHead.y + height),
+					boxColor,
+					0.0f,
+					0, 
+					config::esp_box_thickness 
 				);
 			}
-
-			render::DrawBorderBox(
-				g::hdcBuffer,
-				screenHead.x - (width / 2 + 10),
-				screenHead.y + (height * (100 - player->armor) / 100),
-				2,
-				height - (height * (100 - player->armor) / 100),
-				RGB(0, 185, 255)
-			);
-
-			render::DrawBorderBox(
-				g::hdcBuffer,
-				screenHead.x - (width / 2 + 5),
-				screenHead.y + (height * (100 - player->health) / 100),
-				2,
-				height - (height * (100 - player->health) / 100),
-				RGB(
-					(255 - player->health),
-					(55 + player->health * 2),
-					75
-				)
-			);
 
 			if (roundedDistance > config::flag_render_distance)
 				continue;
 
-			render::RenderText(
-				g::hdcBuffer,
-				screenHead.x + (width / 2 + 5),
-				screenHead.y + 10,
-				(std::to_string(player->health) + "hp").c_str(),
-				RGB(
-					(255 - player->health),
-					(55 + player->health * 2),
-					75
-				),
-				10
-			);
+			ImFont* font = ImGui::GetFont();
+			float fontScale = config::esp_font_size / 12.0f;
 
-			render::RenderText(
-				g::hdcBuffer,
-				screenHead.x + (width / 2 + 5),
-				screenHead.y + 20,
-				(std::to_string(player->armor) + "armor").c_str(),
-				RGB(
-					(255 - player->armor),
-					(55 + player->armor * 2),
-					75
-				),
-				10
-			);
+			if (config::show_player_health) {
+				// draw health bar
+				drawList->AddRectFilled(
+					ImVec2(screenHead.x - (width / 2 + 5), screenHead.y + (height * (100 - player->health) / 100)),
+					ImVec2(screenHead.x - (width / 2 + 3), screenHead.y + height),
+					ImColor(
+						(255 - player->health),
+						(55 + player->health * 2),
+						75,
+						255
+					)
+				);
+
+				// render health text
+				drawList->AddText(
+					font,
+					config::esp_font_size,
+					ImVec2(screenHead.x + (width / 2 + 5), screenHead.y + 10),
+					ImColor(config::esp_health_color.toImVec4()),
+					(std::to_string(player->health) + "hp").c_str()
+				);
+			}
+
+			if (config::show_player_armor) {
+				// draw armor bar
+				drawList->AddRectFilled(
+					ImVec2(screenHead.x - (width / 2 + 10), screenHead.y + (height * (100 - player->armor) / 100)),
+					ImVec2(screenHead.x - (width / 2 + 8), screenHead.y + height),
+					ImColor(config::esp_armor_color.toImVec4())
+				);
+
+				// render armor text
+				drawList->AddText(
+					font,
+					config::esp_font_size,
+					ImVec2(screenHead.x + (width / 2 + 5), screenHead.y + 20),
+					ImColor(config::esp_armor_color.toImVec4()),
+					(std::to_string(player->armor) + "armor").c_str()
+				);
+			}
+
+			float textY = screenHead.y + 10;
+
+			// plyaer name
+			if (config::show_player_name) {
+				drawList->AddText(
+					font,
+					config::esp_font_size,
+					ImVec2(screenHead.x + (width / 2 + 5), textY),
+					ImColor(config::esp_name_color.toImVec4()),
+					player->name.c_str()
+				);
+				textY += config::esp_font_size;
+			}
+
+			// player weapon
+			if (config::show_player_weapon) {
+				drawList->AddText(
+					font,
+					config::esp_font_size,
+					ImVec2(screenHead.x + (width / 2 + 5), textY),
+					ImColor(config::esp_weapon_color.toImVec4()),
+					player->weapon.c_str()
+				);
+				textY += config::esp_font_size;
+			}
+
+			// player distance
+			if (config::show_player_distance) {
+				drawList->AddText(
+					font,
+					config::esp_font_size,
+					ImVec2(screenHead.x + (width / 2 + 5), textY),
+					ImColor(config::esp_distance_color.toImVec4()),
+					(std::to_string(roundedDistance) + "m away").c_str()
+				);
+				textY += config::esp_font_size;
+			}
 
 			if (config::show_extra_flags)
 			{
-				render::RenderText(
-					g::hdcBuffer,
-					screenHead.x + (width / 2 + 5),
-					screenHead.y + 30,
-					player->weapon.c_str(),
-					config::esp_distance_color,
-					10
+				// render money
+				drawList->AddText(
+					font,
+					config::esp_font_size,
+					ImVec2(screenHead.x + (width / 2 + 5), textY),
+					ImColor(0, 125, 0, 255),
+					("$" + std::to_string(player->money)).c_str()
 				);
+				textY += config::esp_font_size;
 
-				render::RenderText(
-					g::hdcBuffer,
-					screenHead.x + (width / 2 + 5),
-					screenHead.y + 40,
-					(std::to_string(roundedDistance) + "m away").c_str(),
-					config::esp_distance_color,
-					10
-				);
-
-				render::RenderText(
-					g::hdcBuffer,
-					screenHead.x + (width / 2 + 5),
-					screenHead.y + 50,
-					("$" + std::to_string(player->money)).c_str(),
-					RGB(0, 125, 0),
-					10
-				);
-
+				// render flash status
 				if (player->flashAlpha > 100)
 				{
-					render::RenderText(
-						g::hdcBuffer,
-						screenHead.x + (width / 2 + 5),
-						screenHead.y + 60,
-						"Player is flashed",
-						config::esp_distance_color,
-						10
+					drawList->AddText(
+						font,
+						config::esp_font_size,
+						ImVec2(screenHead.x + (width / 2 + 5), textY),
+						ImColor(config::esp_distance_color.toImVec4()),
+						"Player is flashed"
 					);
+					textY += config::esp_font_size;
 				}
 
+				// render defusing status
 				if (player->is_defusing)
 				{
-					const std::string defuText = "Player is defusing";
-					render::RenderText(
-						g::hdcBuffer,
-						screenHead.x + (width / 2 + 5),
-						screenHead.y + 60,
-						defuText.c_str(),
-						config::esp_distance_color,
-						10
+					drawList->AddText(
+						font,
+						config::esp_font_size,
+						ImVec2(screenHead.x + (width / 2 + 5), textY),
+						ImColor(config::esp_distance_color.toImVec4()),
+						"Player is defusing"
 					);
 				}
 			}
 		}
-		// std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
-	// triggerbot
+	// triggerbot with config integration
 	void triggerbot()
 	{
 		if (!config::triggerbot_enabled)
 			return;
 
-		// only trigger when the key is pressed (if configured)
-		if (config::triggerbot_key != 0 && !(GetAsyncKeyState(config::triggerbot_key) & 0x8000))
+		// only trigger when the key is pressed (if configured) and auto shoot is disabled
+		if (config::triggerbot_key != 0 && !(GetAsyncKeyState(config::triggerbot_key) & 0x8000) && !config::triggerbot_auto_shoot)
 			return;
 
 		// double threading shenanigans
 		std::lock_guard<std::mutex> lock(reader_mutex);
 
-		// Check if we're in game
+		// check if in game
 		if (!g_game.inGame)
-			return;	
+			return;
 
 		// friendly fire check, 
 		// check if entity is on team 0 (no team) (easiest way to check if its a player alive and well, 
 		// dodging the health check and all that)
 		if ((g_game.aim_entity_team == g_game.localTeam && config::triggerbot_team_check) || g_game.aim_entity_team == 0)
 			return;
-
 
 		if (config::triggerbot_delay > 0)
 			std::this_thread::sleep_for(std::chrono::milliseconds(config::triggerbot_delay));
