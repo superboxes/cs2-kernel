@@ -43,29 +43,9 @@ This is an external cheat for Counter-Strike 2 that provides various ESP and tri
 
 ## ⚙️ Configuration
 
-Full customization through `config.json`:
+Full customization through the inbuilt UI and `config.json`:
 
-```json
-{
-  "esp_box_color_enemy": [225, 75, 75],
-  "esp_box_color_team": [75, 175, 75],
-  "esp_distance_color": [75, 75, 175],
-  "esp_name_color": [75, 75, 175],
-  "esp_skeleton_color_enemy": [225, 75, 75],
-  "esp_skeleton_color_team": [75, 175, 75],
-  "flag_render_distance": 200,
-  "render_distance": -1.0,
-  "show_box_esp": true,
-  "show_extra_flags": false,
-  "show_head_tracker": false,
-  "show_skeleton_esp": false,
-  "team_esp": false,
-  "triggerbot_delay": 10,
-  "triggerbot_enabled": true,
-  "triggerbot_key": 5,
-  "triggerbot_team_check": true
-}
-```
+![CS2 Cheat UI Showcase](./imgs/ui.gif)
 
 ## 🚀 Quick Setup
 
