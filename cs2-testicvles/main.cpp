@@ -42,13 +42,14 @@ void triggerbot_thread() {
 
 // imgui draw function
 void draw() {
-    if (GetForegroundWindow() == g_game.windowHandle) {
+    if (GetForegroundWindow() == g_game.windowHandle || ui::menu_visible) {
         // esp drawing
         hack::draw();
+
+        // menu rendering
+        ui::render();
     }
 
-    // menu rendering
-    ui::render();
 }
 
 int main() {
