@@ -100,6 +100,7 @@ namespace updater {
 		offsets::dwViewMatrix = offsets["client.dll"]["dwViewMatrix"];
 		offsets::dwBuildNumber = offsets["engine2.dll"]["dwBuildNumber"];
 		offsets::dwPlantedC4 = offsets["client.dll"]["dwPlantedC4"];
+		offsets::dwViewAngles = offsets["client.dll"]["dwViewAngles"];
 
 		offsets::m_flC4Blow = client_offsets["client.dll"]["classes"]["C_PlantedC4"]["fields"]["m_flC4Blow"];
 		offsets::m_flNextBeep = client_offsets["client.dll"]["classes"]["C_PlantedC4"]["fields"]["m_flNextBeep"];
@@ -120,6 +121,8 @@ namespace updater {
 		offsets::m_sSanitizedPlayerName = client_offsets["client.dll"]["classes"]["CCSPlayerController"]["fields"]["m_sSanitizedPlayerName"];
 		offsets::m_iTeamNum = client_offsets["client.dll"]["classes"]["C_BaseEntity"]["fields"]["m_iTeamNum"];
 		offsets::m_iIDEntIndex = client_offsets["client.dll"]["classes"]["C_CSPlayerPawnBase"]["fields"]["m_iIDEntIndex"];
+		offsets::m_aimPunchAngle = client_offsets["client.dll"]["classes"]["C_CSPlayerPawn"]["fields"]["m_aimPunchAngle"];
+		offsets::m_vecViewOffset = client_offsets["client.dll"]["classes"]["C_BaseModelEntity"]["fields"]["m_vecViewOffset"];
 
 		std::cout << "[updater] Defined offsets" << std::endl;
 
@@ -324,6 +327,12 @@ namespace updater {
 			offsets::m_iTeamNum = data["m_iTeamNum"];
 		if (data["m_iIDEntIndex"].is_number())
 			offsets::m_iIDEntIndex = data["m_iIDEntIndex"];
+		if (data["dwViewAngles"].is_number())
+			offsets::dwViewAngles = data["dwViewAngles"];
+		if (data["m_aimPunchAngle"].is_number())
+			offsets::m_aimPunchAngle = data["m_aimPunchAngle"];
+		if (data["m_vecViewOffset"].is_number())
+			offsets::m_vecViewOffset = data["m_vecViewOffset"];
 
 		return true;
 	}
@@ -356,6 +365,9 @@ namespace updater {
 		data["m_sSanitizedPlayerName"] = offsets::m_sSanitizedPlayerName;
 		data["m_iTeamNum"] = offsets::m_iTeamNum;
 		data["m_iIDEntIndex"] = offsets::m_iIDEntIndex;
+		data["dwViewAngles"] = offsets::dwViewAngles;
+		data["m_aimPunchAngle"] = offsets::m_aimPunchAngle;
+		data["m_vecViewOffset"] = offsets::m_vecViewOffset;
 
 		std::ofstream output(file_path);
 		output << std::setw(4) << data << std::endl;

@@ -59,5 +59,8 @@ namespace updater {
 		inline std::ptrdiff_t m_iTeamNum = 0x0;
 
 		inline std::ptrdiff_t m_iIDEntIndex = 0x0;
+		inline std::ptrdiff_t dwViewAngles = 0x0;
+		inline std::ptrdiff_t m_aimPunchAngle = 0x0;
+		inline std::ptrdiff_t m_vecViewOffset = 0x0;
 	}
 }

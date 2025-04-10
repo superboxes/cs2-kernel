@@ -1,9 +1,13 @@
+#pragma once
+#define _USE_MATH_DEFINES
+
 #include <thread>
 #include <cmath>
 #include "../mem/reader.hpp"
 #include "../classes/config.hpp"
 #include "../mem/driver/driver.h"
 #include "imgui.h"
+#include <math.h>
 
 namespace hack {
 	// all the bone connections for the skeleton ESP
@@ -291,5 +295,51 @@ namespace hack {
 		mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+	}
+
+	void aimbot() {
+		if (!(GetAsyncKeyState(VK_XBUTTON2) & 0x8000))
+			return;
+
+		std::lock_guard<std::mutex> lock(reader_mutex);
+
+		Vector3 closestEnemy = Vector3(0, 0, 0);
+		boolean first = true;
+
+		for (auto player = g_game.players.begin(); player < g_game.players.end(); player++) {
+			Vector3 playerPosition = player->origin;
+			Vector3 playerHead = player->head;
+			int health = player->health;
+
+			if (first || (health > 0 && health <= 100) && playerPosition.magnitude(g_game.localPlayerPosition) < closestEnemy.magnitude(g_game.localPlayerPosition)) {
+				if (player->team == g_game.localTeam) {
+					continue;
+				}
+
+				float pitch = g_game.localPlayerPosition.pitchAngle(playerPosition);
+				float yaw = g_game.localPlayerPosition.yawAngle(playerPosition);
+
+				Vector3 newAngles = Vector3(pitch, yaw, 0.0f);
+				Vector3 delta = g_game.viewAngles.delta(newAngles);
+				if (delta.normalize() > 5) continue;
+
+				closestEnemy = playerPosition;
+				first = false;
+			}
+		}
+
+		if (closestEnemy.IsZero()) {
+			return;
+		}
+
+		float pitch = g_game.localPlayerPosition.pitchAngle(closestEnemy);
+		float yaw = g_game.localPlayerPosition.yawAngle(closestEnemy);
+
+		Vector3 newAngles = Vector3(pitch, yaw, 0.0f);
+		Vector3 delta = g_game.viewAngles.delta(newAngles);
+
+		Vector3 smoothAngles = g_game.viewAngles + delta * 0.2f;
+
+		g_game.setViewAngle(smoothAngles);
 	}
 }

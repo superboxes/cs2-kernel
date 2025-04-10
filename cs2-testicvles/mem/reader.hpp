@@ -65,22 +65,26 @@ public:
 	uintptr_t entity_list;
 	int aim_entity_team;
 	CC4 c4;
+	int crosshairEntityId;
+	uintptr_t aimedEntity;
+	uintptr_t localpCSPlayerPawn;
+	uintptr_t localPlayer;
+	Vector3 eye;
+	Vector3 viewAngles;
+	Vector3 localPlayerPosition;
 	std::vector<CPlayer> players = {};
 	void init();
 	void loop();
 	void close();
 	void updateHWND();
+	void setViewAngle(Vector3 vwa);
 	Vector3 world_to_screen(Vector3* v);
 	HWND windowHandle = NULL;
 private:
 	view_matrix_t view_matrix;
 	std::uint32_t localPlayerPawn;
 	uintptr_t localList_entry2;
-	int crosshairEntityId;
-	uintptr_t aimedEntity;
 	uintptr_t en_list_entry;
-	uintptr_t localpCSPlayerPawn;
-	uintptr_t localPlayer;
 };
 
 inline CGame g_game;

@@ -1,8 +1,10 @@
 #pragma once
 #ifndef _VECTOR_ESP_
 #define _VECTOR_ESP_
+#define _USE_MATH_DEFINES
 #include <numbers>
 #include <cmath>
+#include <math.h>
 
 struct Vector3
 {
@@ -78,6 +80,30 @@ struct Vector3
 		float dz = point.z - z;
 
 		return std::sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
+	float magnitude(const Vector3& other)
+	{
+		return sqrtf(pow(other.x - this->x, 2) + pow(other.y - this->y, 2) + pow(other.z - this->z, 2));
+	}
+
+	float yawAngle(const Vector3& other) const {
+		return atan2(other.y - this->y, other.x - this->x) * (180 / M_PI);
+	}
+
+	float pitchAngle(const Vector3& other) const {
+		float mag = sqrtf(pow(other.x - this->x, 2) + pow(other.y - this->y, 2) + pow(other.z - this->z, 2));
+		return asinf(-(other.z - this->z) / mag) * (180 / M_PI);
+	}
+
+	float normalize() const
+	{
+		return sqrtf(x * x + y * y + z * z);
+	}
+
+	Vector3 delta(const Vector3& other) const
+	{
+		return Vector3(other.x - x, other.y - y, other.z - z);
 	}
 
 	// struct data

@@ -210,6 +210,13 @@ void CGame::loop() {
 		}
 	}
 
+	if (true)
+	{
+		viewAngles = Driver::rpm<Vector3>(g_game.base_client + updater::offsets::dwViewAngles);
+		eye = Driver::rpm<Vector3>(g_game.localPlayer + updater::offsets::m_vecViewOffset);
+		localPlayerPosition = localOrigin + eye;
+	}
+
 	inGame = true;
 	int playerIndex = 0;
 	std::vector<CPlayer> list;
@@ -314,6 +321,11 @@ void CGame::loop() {
 
 	players.clear();
 	players.assign(list.begin(), list.end());
+}
+
+void CGame::setViewAngle(Vector3 vwa)
+{
+	Driver::wpm<Vector3>(g_game.base_client + updater::offsets::dwViewAngles, vwa);
 }
 
 uintptr_t boneAddress;

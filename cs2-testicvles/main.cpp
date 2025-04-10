@@ -36,7 +36,18 @@ void triggerbot_thread() {
             std::cerr << "[ERROR] Exception in triggerbot: " << e.what() << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
+}
+
+void aimbot_thread() {
+    while (!finish) {
+        try {
+            hack::aimbot();
+        }
+        catch (const std::exception& e) {
+			std::cerr << "[ERROR] Exception in aimbot: " << e.what() << std::endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
     }
 }
 
@@ -95,6 +106,7 @@ int main() {
 	// start hack theads
     std::thread read(read_thread);
     std::thread triggerbot(triggerbot_thread);
+	std::thread aimbot(aimbot_thread);
 
     // main loop
     while (!finish) {
@@ -110,8 +122,6 @@ int main() {
 
 		// render our func
         g_overlay.Render(draw);
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
 	// wait for threads to finish
@@ -120,6 +130,9 @@ int main() {
 
     if (triggerbot.joinable()) triggerbot.join();
     else triggerbot.detach();
+
+	if (aimbot.joinable()) aimbot.join();
+	else aimbot.detach();
 
 	// overlay cleanup
     g_overlay.Shutdown();

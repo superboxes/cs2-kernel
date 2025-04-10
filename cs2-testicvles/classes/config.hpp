@@ -71,4 +71,17 @@ namespace config {
     inline float ui_scale = 1.0f;
     inline int menu_toggle_key = VK_INSERT;
     inline RGBA ui_accent_color = { 0, 120, 215, 255 };
+
+    // Aimbot settings
+    inline bool aimbot_enabled = true;
+    inline int aimbot_key = VK_XBUTTON2; // Mouse4 by default
+    inline bool aimbot_always_on = true;
+    inline bool aimbot_team_check = false;
+    inline float aimbot_fov = 10.0f;
+    inline float aimbot_smoothing = 5.0f;
+    inline int aimbot_bone = 6; // Head bone by default
+    inline float aimbot_max_distance = 0.0f; // 0 = no limit
+    inline bool aimbot_rcs = true; // Recoil control system
+    inline float aimbot_rcs_strength = 1.0f;
+    inline bool aimbot_autoshoot = true;
 }
