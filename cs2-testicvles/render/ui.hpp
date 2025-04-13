@@ -16,6 +16,7 @@ namespace ui {
     enum class MenuTab {
         ESP,
         Triggerbot,
+        Aimbot,
         Settings
     };
 

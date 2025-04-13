@@ -266,7 +266,7 @@ namespace hack {
 		}
 	}
 
-	// triggerbot with config integration
+	// triggerbot
 	void triggerbot()
 	{
 		if (!config::triggerbot_enabled)
@@ -298,7 +298,10 @@ namespace hack {
 	}
 
 	void aimbot() {
-		if (!(GetAsyncKeyState(VK_XBUTTON2) & 0x8000))
+		if (!config::aimbot_enabled)
+			return;
+
+		if (config::aimbot_key != 0 && !(GetAsyncKeyState(config::aimbot_key) & 0x8000))
 			return;
 
 		std::lock_guard<std::mutex> lock(reader_mutex);
@@ -312,7 +315,7 @@ namespace hack {
 			int health = player->health;
 
 			if (first || (health > 0 && health <= 100) && playerPosition.magnitude(g_game.localPlayerPosition) < closestEnemy.magnitude(g_game.localPlayerPosition)) {
-				if (player->team == g_game.localTeam) {
+				if (player->team == g_game.localTeam && config::aimbot_team_check) {
 					continue;
 				}
 
@@ -321,7 +324,7 @@ namespace hack {
 
 				Vector3 newAngles = Vector3(pitch, yaw, 0.0f);
 				Vector3 delta = g_game.viewAngles.delta(newAngles);
-				if (delta.normalize() > 5) continue;
+				if (delta.normalize() > config::aimbot_fov) continue;
 
 				closestEnemy = playerPosition;
 				first = false;
@@ -338,7 +341,7 @@ namespace hack {
 		Vector3 newAngles = Vector3(pitch, yaw, 0.0f);
 		Vector3 delta = g_game.viewAngles.delta(newAngles);
 
-		Vector3 smoothAngles = g_game.viewAngles + delta * 0.2f;
+		Vector3 smoothAngles = g_game.viewAngles + delta * config::aimbot_smoothing;
 
 		g_game.setViewAngle(smoothAngles);
 	}

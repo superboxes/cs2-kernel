@@ -292,6 +292,15 @@ namespace ui {
         ImGui::Text("Press END to exit application");
     }
 
+	void render_aimbot_tab() {
+		ImGui::Checkbox("Enable Aimbot", &config::aimbot_enabled);
+		ImGui::Checkbox("Aimbot Team Check", &config::aimbot_team_check);
+		ImGui::SliderFloat("Aimbot FOV", &config::aimbot_fov, 0.0f, 15.0f);
+		ImGui::SliderFloat("Aimbot Smoothness", &config::aimbot_smoothing, 0.2f, 1);
+		
+        show_key_bind_button("Aimbot Key", &config::aimbot_key);
+	}
+
     void render() {
         if (menu_visible) {
             ImGui::Begin("CS2 Cheat", NULL, ImGuiWindowFlags_AlwaysAutoResize);
@@ -314,6 +323,12 @@ namespace ui {
                     render_settings_tab();
                     ImGui::EndTabItem();
                 }
+
+				if (ImGui::BeginTabItem("Aimbot")) {
+					current_tab = MenuTab::Aimbot;
+					render_aimbot_tab();
+					ImGui::EndTabItem();
+				}
 
                 ImGui::EndTabBar();
             }

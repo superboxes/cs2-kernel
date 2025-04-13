@@ -57,6 +57,17 @@ namespace config {
         if (data["show_player_weapon"].is_boolean())
             show_player_weapon = data["show_player_weapon"];
 
+		if (data["aimbot_enabled"].is_boolean())
+			aimbot_enabled = data["aimbot_enabled"];
+		if (data["aimbot_key"].is_number())
+			aimbot_key = data["aimbot_key"];
+		if (data["aimbot_team_check"].is_boolean())
+			aimbot_team_check = data["aimbot_team_check"];
+		if (data["aimbot_fov"].is_number())
+			aimbot_fov = data["aimbot_fov"];
+		if (data["aimbot_smoothing"].is_number())
+			aimbot_smoothing = data["aimbot_smoothing"];
+
         auto loadRGBA = [&data](const std::string& key, RGBA& color) {
             if (data.find(key) != data.end() && data[key].is_array() && data[key].size() >= 4) {
                 color = {
@@ -141,6 +152,12 @@ namespace config {
         data["triggerbot_key"] = triggerbot_key;
         data["triggerbot_team_check"] = triggerbot_team_check;
         data["triggerbot_auto_shoot"] = triggerbot_auto_shoot;
+
+		data["aimbot_enabled"] = aimbot_enabled;
+		data["aimbot_key"] = aimbot_key;
+		data["aimbot_team_check"] = aimbot_team_check;
+		data["aimbot_fov"] = aimbot_fov;
+		data["aimbot_smoothing"] = aimbot_smoothing;
 
         data["ui_theme"] = ui_theme;
         data["ui_scale"] = ui_scale;

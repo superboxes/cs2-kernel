@@ -210,7 +210,7 @@ void CGame::loop() {
 		}
 	}
 
-	if (true)
+	if (config::aimbot_enabled)
 	{
 		viewAngles = Driver::rpm<Vector3>(g_game.base_client + updater::offsets::dwViewAngles);
 		eye = Driver::rpm<Vector3>(g_game.localPlayer + updater::offsets::m_vecViewOffset);

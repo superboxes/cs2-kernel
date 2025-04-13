@@ -60,7 +60,6 @@ void draw() {
         // menu rendering
         ui::render();
     }
-
 }
 
 int main() {
@@ -107,6 +106,9 @@ int main() {
     std::thread read(read_thread);
     std::thread triggerbot(triggerbot_thread);
 	std::thread aimbot(aimbot_thread);
+
+    SetThreadPriority(read.native_handle(), THREAD_PRIORITY_ABOVE_NORMAL);
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 
     // main loop
     while (!finish) {
